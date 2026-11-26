@@ -1,7 +1,7 @@
 # Etap 0 — Architektura i plan MVP
 
 > Wewnętrzny system e-commerce: PIM + wzorce ofert, lokalizacja AI, silnik publikacji z konektorami marketplace, Unified Inbox, RBAC/bezpieczeństwo.
-> Status dokumentu: **propozycja do akceptacji** (2026-11-25).
+> Status dokumentu: zaakceptowany; Etap 1 zrealizowany (2026-11-26).
 
 ---
 
@@ -16,28 +16,35 @@
 
 ---
 
-## 2. Rekomendowany stack
+## 2. Stack (zaktualizowany po Etapie 0 – patrz `docs/adr/0001-uproszczony-stack.md`)
+
+Projekt utrzymuje jedna osoba, która nie jest programistą, dlatego stack ograniczono do **dwóch procesów i jednej bazy danych**.
 
 | Warstwa | Technologia | Uzasadnienie |
 |---|---|---|
-| Język | **TypeScript** (strict) w całym repo | Jeden język, współdzielone typy front/back |
-| Monorepo | **pnpm workspaces + Turborepo** | Szybkie buildy, cache, wyraźne granice pakietów |
-| Backend API | **NestJS** (adapter Fastify) | Moduły, DI, guardy (RBAC), dojrzała dokumentacja, naturalny podział na moduły domenowe |
-| Walidacja / kontrakty | **Zod** + `nestjs-zod` → OpenAPI | Jedno źródło prawdy dla DTO |
-| Baza danych | **PostgreSQL 16** | JSONB na atrybuty, pełnotekstowe wyszukiwanie, niezawodność |
-| ORM / migracje | **Prisma** | Czytelny schemat, migracje, typy generowane automatycznie |
-| Kolejki | **BullMQ + Redis** | Retry, backoff, priorytety, rate-limit per konto marketplace, dashboard |
-| Worker | NestJS standalone app (ten sam kod modułów) | Publikacja, synchronizacja inboxu, AI, cron (SLA) |
-| Frontend | **React + Vite + TanStack Router + TanStack Query** | SPA dla narzędzia wewnętrznego — prostsze niż SSR, szybkie |
-| UI | **shadcn/ui + Tailwind CSS**, TanStack Table, React Hook Form | Gęste tabele, formularze, edytor porównawczy |
-| Edytor treści | **TipTap** (ograniczony HTML) | Sekcje opisów, zmienne `{{atrybut}}` |
-| Pliki | **S3-compatible** (MinIO lokalnie; S3/R2/Azure Blob na produkcji) | Zdjęcia, PDF-y GPSR, certyfikaty |
-| AI | Port `TranslationProvider` / `LlmProvider`; domyślnie **Claude API**, opcjonalnie DeepL | Wymienny dostawca, glossary egzekwowany po naszej stronie |
-| Auth | Sesje (cookie httpOnly) + argon2; opcjonalnie SSO (OIDC: Microsoft/Google) | Prosty i bezpieczny model dla internal tool |
-| Szyfrowanie sekretów | **AES-256-GCM, envelope encryption** (klucz główny z env/KMS) | Tokeny OAuth i klucze API zaszyfrowane w bazie, rotacja kluczy |
-| Testy | Vitest, Supertest, Playwright (E2E) | |
-| Observability | pino (logi JSON), OpenTelemetry, Sentry | |
-| Lokalnie / deploy | Docker Compose (Postgres, Redis, MinIO, Mailpit), obrazy Docker | Gotowe pod VPS, k8s lub chmurę |
+| Język | **TypeScript** (strict) w całym repo | Jeden język, współdzielone typy |
+| Monorepo | **pnpm workspaces** | Wyraźne granice pakietów bez dodatkowych narzędzi |
+| Panel + API | **Next.js 16** (App Router, Server Actions, route handlers) | Jedna aplikacja zamiast osobnego frontendu i backendu |
+| Logika domeny | pakiet `@app/domain` (czysty TypeScript, bez I/O) | Oddzielona od frameworka i integracji, łatwa do testowania |
+| Baza danych | **PostgreSQL 16** | Jedyna usługa stanowa |
+| ORM / migracje | **Drizzle ORM + drizzle-kit** | Lekki, bez generowania klienta i binarek |
+| Kolejka zadań | **pg-boss** (kolejka w PostgreSQL) | Retry, harmonogram (cron), bez Redisa |
+| Worker | `apps/worker` (Node + tsx) | Publikacja, synchronizacja inboxu, AI, SLA |
+| UI | **Tailwind CSS 4** + własne komponenty w stylu shadcn/ui, ikony lucide | Interfejs tylko po polsku |
+| Walidacja | **Zod** | Te same schematy w formularzach i na serwerze |
+| Auth | Konta lokalne: argon2id, sesje w bazie (w ciasteczku tylko losowy token), blokada po 5 nieudanych próbach | Prosto i bezpiecznie; SSO można dodać później |
+| Szyfrowanie sekretów | **AES-256-GCM** z wersjonowanymi kluczami głównymi, szyfrogram powiązany z ID konta | Rotacja kluczy bez przestojów |
+| AI | Port `TranslationProvider` / `LlmProvider` (Etap 4); domyślnie Claude API, wymienny | |
+| Pliki (Etap 2) | Magazyn zgodny z S3 (np. Cloudflare R2) | Zdjęcia, PDF-y GPSR |
+| Testy | Vitest (domena, kryptografia), Playwright (E2E) | |
+| Uruchomienie | Docker Compose (db + migrate + web + worker), CI w GitHub Actions | |
+
+### Hosting – rekomendacja
+1. **Zalecane: zarządzana platforma (PaaS) w regionie UE, np. Render (Frankfurt) lub Railway (EU).** Jedna usługa „web”, jedna „background worker” i zarządzany PostgreSQL z automatycznymi kopiami zapasowymi. Wdrożenie następuje automatycznie po każdej zmianie w repozytorium. Nie trzeba administrować serwerem.
+2. Alternatywa najtańsza: serwer VPS w UE (np. Hetzner) z panelem Coolify i tym samym `docker-compose`. Taniej, ale aktualizacje, kopie zapasowe i bezpieczeństwo serwera są po naszej stronie.
+3. AWS, Azure lub GCP mają sens dopiero przy wymaganiach korporacyjnych.
+
+Dane (w tym wiadomości klientów) pozostają w UE. Decyzję o koncie hostingowym podejmujemy przed pierwszym wdrożeniem (koniec Etapu 2).
 
 ---
 
@@ -46,51 +53,25 @@
 ```
 .
 ├── apps/
-│   ├── web/                      # React SPA (panel)
+│   ├── web/                      # Next.js – panel i API (Server Actions)
 │   │   └── src/
-│   │       ├── routes/           # catalog, templates, translations, publishing, inbox, admin
-│   │       ├── features/         # komponenty per moduł
-│   │       ├── components/ui/    # shadcn/ui
-│   │       └── lib/              # api client, auth, i18n
-│   ├── api/                      # NestJS – HTTP API
-│   │   └── src/
-│   │       ├── modules/
-│   │       │   ├── identity/     # użytkownicy, role, sesje, RBAC
-│   │       │   ├── audit/
-│   │       │   ├── catalog/      # produkty, warianty, atrybuty, media
-│   │       │   ├── templates/    # wzorce ofert, overrides
-│   │       │   ├── localization/ # tłumaczenia, glossary, workflow
-│   │       │   ├── channels/     # marketplace'y, konta, poświadczenia
-│   │       │   ├── publishing/   # mapowania, pre-flight, joby
-│   │       │   └── inbox/        # wątki, wiadomości, SLA
-│   │       └── infrastructure/   # prisma, queue, storage, crypto, outbox
-│   └── worker/                   # NestJS standalone – procesory kolejek + cron
+│   │       ├── app/(panel)/      # katalog, wzorce, tlumaczenia, publikacja, wiadomosci, admin/*
+│   │       ├── app/logowanie/
+│   │       ├── components/       # komponenty UI
+│   │       └── server/           # sesje, RBAC, dostęp do bazy (tylko serwer)
+│   └── worker/                   # procesy kolejek + harmonogram + outbox
 ├── packages/
-│   ├── contracts/                # Zod schemas, DTO, enumy, kody uprawnień
-│   ├── domain/                   # czysta logika (bez I/O): dziedziczenie wariantów,
+│   ├── domain/                   # czysta logika: uprawnienia, (dalej) dziedziczenie wariantów,
 │   │                             # renderer wzorców, reguły pre-flight, SLA, glossary
-│   ├── db/                       # schema.prisma, migracje, seed
-│   ├── connectors/
-│   │   ├── sdk/                  # interfejs MarketplaceConnector, typy, błędy, testkit
-│   │   ├── mock/                 # konfigurowalny fake (opóźnienia, losowe błędy)
-│   │   ├── allegro/
-│   │   ├── kaufland/
-│   │   ├── mirakl/               # baza dla marketplace'ów na Mirakl (np. Leroy Merlin)
-│   │   └── leroy-merlin-fr/
-│   ├── ai/                       # porty LLM/tłumaczeń + adaptery (Claude, DeepL, fake)
-│   └── config/                   # tsconfig, eslint, prettier
-├── infra/
-│   ├── docker-compose.yml
-│   └── docker/                   # Dockerfile api/worker/web
-├── docs/
-│   ├── ARCHITECTURE.md
-│   └── adr/                      # Architecture Decision Records
-└── turbo.json / pnpm-workspace.yaml
+│   ├── db/                       # schemat Drizzle, migracje, seed, hasła
+│   ├── platform/                 # szyfrowanie, audyt, outbox, kolejka
+│   ├── connectors/               # (Etap 5) sdk + mock, allegro, kaufland, mirakl, ...
+│   └── ai/                       # (Etap 4) porty LLM/tłumaczeń + adaptery
+├── infra/                        # Dockerfile, docker-compose.yml
+└── docs/                         # ARCHITECTURE.md, adr/, screenshots/
 ```
 
-**Reguła zależności** (pilnowana przez ESLint `boundaries`):
-`domain` ← `api/worker modules` → `connectors/*`, `ai` (przez porty z `connectors/sdk`).
-`domain` nie importuje niczego z infrastruktury; `connectors/*` nie importują `db` ani modułów API.
+**Reguła zależności:** `domain` nie importuje niczego poza sobą; `connectors/*` i `ai` nie importują `db` ani aplikacji; aplikacje (`web`, `worker`) składają wszystko razem.
 
 ---
 
@@ -134,6 +115,8 @@ export interface MarketplaceConnector {
 ## 5. Schemat bazy danych (kluczowe tabele)
 
 ### 5.1 Tożsamość i bezpieczeństwo
+Uwaga: w Etapie 1 uprawnienia ról przechowywane są jako tablica kodów w `roles.permissions` (zamiast osobnej tabeli `role_permissions`).
+
 | Tabela | Kluczowe pola |
 |---|---|
 | `users` | id, email, name, password_hash, is_active, last_login_at |

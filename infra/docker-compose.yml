@@ -1,0 +1,57 @@
+# Uruchomienie całego systemu jednym poleceniem:
+#   docker compose -f infra/docker-compose.yml --env-file .env up -d --build
+# Panel: http://localhost:3000
+name: ecommerce-hub
+
+x-app-env: &app-env
+  DATABASE_URL: postgres://app:app@db:5432/app
+  APP_ENCRYPTION_KEYS: ${APP_ENCRYPTION_KEYS}
+  APP_ENCRYPTION_ACTIVE_KEY: ${APP_ENCRYPTION_ACTIVE_KEY}
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    build: { context: .., dockerfile: infra/Dockerfile, target: migrate }
+    environment:
+      <<: *app-env
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@firma.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+    depends_on:
+      db: { condition: service_healthy }
+
+  web:
+    build: { context: .., dockerfile: infra/Dockerfile, target: web }
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      # Lokalnie działamy po HTTP; na produkcji (HTTPS) usuń tę linię.
+      SESSION_COOKIE_SECURE: "false"
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: { context: .., dockerfile: infra/Dockerfile, target: worker }
+    restart: unless-stopped
+    environment: *app-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+volumes:
+  pgdata:

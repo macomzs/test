@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: app, POSTGRES_PASSWORD: app, POSTGRES_DB: app }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U app" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://app:app@localhost:5432/app
+      APP_ENCRYPTION_KEYS: "1:ZmFrZS1kZXYta2V5LWNoYW5nZS1tZS0zMi1ieXRlcyE="
+      APP_ENCRYPTION_ACTIVE_KEY: "1"
+      SEED_ADMIN_PASSWORD: "CiHaslo12345!"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @app/web exec next typegen
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm db:setup
+      - run: pnpm build

@@ -1,0 +1,25 @@
+{
+  "name": "@app/platform",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./crypto": "./src/crypto.ts",
+    "./queue": "./src/queue.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@app/db": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "pg-boss": "12.40.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.7",
+    "typescript": "5.9.3",
+    "vitest": "5.1.2"
+  }
+}
