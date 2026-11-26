@@ -15,6 +15,14 @@ const config: NextConfig = {
   transpilePackages: ["@app/db", "@app/domain", "@app/platform"],
   serverExternalPackages: ["@node-rs/argon2", "pg", "pg-boss"],
   poweredByHeader: false,
+  // GitHub Codespaces udostępnia aplikację pod adresem *.app.github.dev – zezwalamy na niego
+  // w trybie deweloperskim i dla formularzy (Server Actions).
+  allowedDevOrigins: ["*.app.github.dev"],
+  experimental: {
+    serverActions: {
+      allowedOrigins: process.env.CODESPACES ? ["*.app.github.dev", "localhost:3000"] : [],
+    },
+  },
   async headers() {
     return [
       {
