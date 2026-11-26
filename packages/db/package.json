@@ -11,8 +11,8 @@
     "typecheck": "tsc -p .",
     "test": "echo \"(brak testów w @app/db)\"",
     "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate.ts",
-    "seed": "tsx src/seed.ts"
+    "migrate": "tsx --env-file-if-exists=../../.env src/migrate.ts",
+    "seed": "tsx --env-file-if-exists=../../.env src/seed.ts"
   },
   "dependencies": {
     "@app/domain": "workspace:*",

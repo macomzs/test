@@ -12,7 +12,15 @@ Architektura, schemat bazy i plan etapów: [`docs/ARCHITECTURE.md`](docs/ARCHITE
 | 2 | Katalog produktów (PIM) | ⏳ następny |
 | 3–6 | Wzorce, tłumaczenia AI, publikacja (konektory symulowane), skrzynka wiadomości | planowane |
 
-## Uruchomienie – sposób 1: Docker (najprostszy)
+## Uruchomienie – sposób 0: w przeglądarce, bez instalacji (GitHub Codespaces)
+1. Na stronie repozytorium kliknij zielony przycisk **Code** → zakładka **Codespaces** → **Create codespace on** (wybierz branch z najnowszym etapem).
+2. Poczekaj kilka minut na pierwsze uruchomienie: instalują się zależności, tworzy się baza i konto administratora.
+3. Panel otworzy się w nowej karcie. Jeśli tak się nie stanie, otwórz zakładkę **Ports** i kliknij ikonę globusa przy porcie 3000.
+4. Zaloguj się: `admin@firma.local` / `ZmienToHaslo123!`.
+
+Codespace zatrzymuje się sam po okresie bezczynności, a dane w bazie zostają. Konta osobiste GitHub mają miesięczny darmowy limit godzin. Po skończonych testach usuń codespace na https://github.com/codespaces.
+
+## Uruchomienie – sposób 1: Docker
 Wymagany [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ```bash

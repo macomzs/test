@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+// Wspólny plik .env w katalogu głównym repozytorium (zmienne już ustawione w systemie mają pierwszeństwo).
+try {
+  process.loadEnvFile(path.join(import.meta.dirname, "../../.env"));
+} catch {
+  // brak pliku .env – np. na hostingu, gdzie zmienne ustawia się w panelu
+}
+
 const config: NextConfig = {
   // Obraz Dockera używa trybu "standalone" (minimalny serwer); lokalnie wystarcza "next start".
   output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
