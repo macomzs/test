@@ -111,6 +111,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             </CardBody>
           </Card>
 
+          <Card>
+            <CardHeader title="Treść oferty i tłumaczenia" />
+            <CardBody className="space-y-2 text-sm">
+              <Link href={`/katalog/${product.id}/oferta`} className="block font-medium text-brand-700 hover:underline">Treść oferty (wzorzec i nadpisania per kanał) →</Link>
+              {product.kind !== "PARENT" ? <Link href={`/tlumaczenia?q=${encodeURIComponent(product.ean ?? product.name)}`} className="block font-medium text-brand-700 hover:underline">Tłumaczenia →</Link> : null}
+            </CardBody>
+          </Card>
+
           {product.kind !== "PARENT" ? (
             <Card>
               <CardHeader title="Stan magazynowy" />

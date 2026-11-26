@@ -9,6 +9,7 @@ import { Sidebar, type NavItem } from "./sidebar";
 const ADMIN_NAV: (NavItem & { permission: Permission })[] = [
   { href: "/admin/uzytkownicy", label: "Użytkownicy i role", icon: "users", permission: "users.manage" },
   { href: "/admin/kanaly", label: "Kanały i klucze API", icon: "channels", permission: "channels.manage" },
+  { href: "/admin/integracje", label: "Integracje AI", icon: "ai", permission: "system.manage" },
   { href: "/admin/audyt", label: "Logi audytowe", icon: "audit", permission: "audit.read" },
   { href: "/admin/system", label: "Zadania w tle", icon: "system", permission: "system.manage" },
 ];

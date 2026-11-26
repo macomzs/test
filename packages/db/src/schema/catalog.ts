@@ -13,6 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "./identity";
+import { offerTemplates } from "./content";
 
 /**
  * SIMPLE  – produkt bez wariantów,
@@ -45,6 +46,8 @@ export const products = pgTable(
     heightMm: integer("height_mm"),
     weightG: integer("weight_g"),
     materials: text("materials"),
+    /** Wzorzec oferty; wariant bez wzorca używa wzorca produktu głównego. */
+    templateId: uuid("template_id").references((): AnyPgColumn => offerTemplates.id, { onDelete: "set null" }),
     stockQty: integer("stock_qty"),
     stockUpdatedAt: timestamp("stock_updated_at", { withTimezone: true }),
     source: productSource("source").notNull().default("MANUAL"),

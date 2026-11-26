@@ -1,5 +1,6 @@
 import { closeDb, getDb } from "@app/db";
 import { writeAudit } from "@app/platform";
+import { translateProduct, type TranslateJob } from "@app/services";
 import { getQueue, QUEUES } from "@app/platform/queue";
 import { dispatchOutbox } from "./outbox";
 
@@ -19,6 +20,12 @@ await boss.work<{ requestedBy?: string }>(QUEUES.systemPing, async ([job]) => {
     details: { requestedBy: job.data.requestedBy ?? null, processedAt: new Date().toISOString() },
   });
   console.log(`[worker] Zadanie testowe ${job.id} wykonane`);
+});
+
+await boss.work<TranslateJob>(QUEUES.translate, { batchSize: 1 }, async ([job]) => {
+  if (!job) return;
+  console.log(`[worker] Tłumaczenie ${job.data.productId} → ${job.data.locale} (${job.data.scope})`);
+  await translateProduct(getDb(), job.data);
 });
 
 await boss.work(QUEUES.outboxDispatch, async () => {

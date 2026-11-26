@@ -7,6 +7,7 @@ import { PgBoss } from "pg-boss";
 export const QUEUES = {
   systemPing: "system.ping",
   outboxDispatch: "system.outbox-dispatch",
+  translate: "content.translate",
 } as const;
 
 export type QueueName = (typeof QUEUES)[keyof typeof QUEUES];

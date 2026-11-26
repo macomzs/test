@@ -11,7 +11,9 @@ Architektura, schemat bazy i plan etapów: [`docs/ARCHITECTURE.md`](docs/ARCHITE
 | 1 | Fundament: logowanie, role (RBAC), log audytowy, szyfrowanie kluczy API, kolejka zadań, układ panelu | ✅ |
 | 2a | Katalog produktów: lista, karta produktu, warianty z dziedziczeniem, import z feedu XML | ✅ |
 | 2b | Atrybuty techniczne, zdjęcia we własnym magazynie, dokumenty PDF (GPSR), import CSV/Excel | ⏳ następny |
-| 3–6 | Wzorce, tłumaczenia AI, publikacja (konektory symulowane), skrzynka wiadomości | planowane |
+| 3 | Wzorce ofert (PL) ze zmiennymi, przypisanie do produktów, nadpisania per kanał, podgląd z limitem tytułu | ✅ |
+| 4 | Tłumaczenia AI (Claude lub tryb testowy), słownik terminologii, workflow Szkic AI → Do akceptacji → Zatwierdzone, edytor porównawczy, wykrywanie nieaktualnych tłumaczeń | ✅ |
+| 5–6 | Publikacja (konektory symulowane), skrzynka wiadomości | planowane |
 
 ## Uruchomienie – sposób 0: w przeglądarce, bez instalacji (GitHub Codespaces)
 1. Na stronie repozytorium kliknij zielony przycisk **Code** → zakładka **Codespaces** → **Create codespace on** (wybierz branch z najnowszym etapem).
@@ -47,7 +49,7 @@ pnpm dev                   # panel na http://localhost:3000 + worker
 | Polecenie | Co robi |
 |---|---|
 | `pnpm test` | testy jednostkowe i integracyjne (uprawnienia, szyfrowanie, warianty, import feedu) |
-| `node e2e/smoke.cjs`, `node e2e/catalog-import.cjs` | testy E2E w przeglądarce (opis w nagłówku pliku) |
+| `node e2e/smoke.cjs`, `node e2e/catalog-import.cjs`, `node e2e/content-translations.cjs` | testy E2E w przeglądarce (opis w nagłówku pliku) |
 | `pnpm typecheck` | kontrola typów w całym repozytorium |
 | `pnpm db:generate` | tworzy migrację po zmianie schematu w `packages/db/src/schema` |
 | `pnpm keys:generate` | generuje nowy klucz szyfrujący (do `APP_ENCRYPTION_KEYS`) |
@@ -56,3 +58,8 @@ pnpm dev                   # panel na http://localhost:3000 + worker
 - **Klucz szyfrujący** (`APP_ENCRYPTION_KEYS`) przechowuj poza repozytorium. Jego utrata oznacza utratę zapisanych kluczy API marketplace'ów. Rotacja: dopisz `2:nowy_klucz` i ustaw `APP_ENCRYPTION_ACTIVE_KEY=2`; stare dane dalej będą czytelne.
 - Po pierwszym logowaniu zmień hasło administratora (Moje konto).
 - Plik `.env` nie trafia do repozytorium (jest w `.gitignore`).
+
+## Tłumaczenia AI – konfiguracja
+Domyślnie działa **tryb testowy**: tekst dostaje tylko znacznik języka, np. „[DE] …”. Dzięki temu można przećwiczyć cały proces bez kosztów.
+Prawdziwe tłumaczenia: **Administracja → Integracje AI**. Wybierz „Claude”, wklej klucz API z platform.claude.com (zapisywany zaszyfrowany) i kliknij „Testuj połączenie”.
+Tłumaczenia wykonuje proces „worker” (kolejka zadań), dlatego musi działać razem z panelem (`pnpm start` / `pnpm dev` uruchamia oba).

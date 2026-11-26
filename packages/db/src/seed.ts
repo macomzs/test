@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { closeDb, getDb } from "./client";
 import { hashPassword } from "./passwords";
-import { marketplaces, roles, userRoles, users } from "./schema";
+import { languages, marketplaces, roles, userRoles, users } from "./schema";
 
 /** Dane startowe – skrypt można uruchamiać wielokrotnie (nie tworzy duplikatów). */
 const MARKETPLACES = [
@@ -15,7 +15,21 @@ const MARKETPLACES = [
   { code: "leroy_merlin_fr", name: "Leroy Merlin FR", country: "FR", defaultLocale: "fr", currency: "EUR", connectorKey: "mirakl", badgeColor: "#78be20" },
 ];
 
+const LANGUAGES = [
+  { code: "pl", name: "Polski", isSource: true, position: 0 },
+  { code: "en", name: "Angielski", isSource: false, position: 1 },
+  { code: "de", name: "Niemiecki", isSource: false, position: 2 },
+  { code: "fr", name: "Francuski", isSource: false, position: 3 },
+  { code: "cs", name: "Czeski", isSource: false, position: 4 },
+  { code: "nl", name: "Niderlandzki", isSource: false, position: 5 },
+];
+
 const db = getDb();
+
+for (const l of LANGUAGES) {
+  await db.insert(languages).values(l).onConflictDoNothing();
+}
+console.log(`✔ Języki (${LANGUAGES.length})`);
 
 for (const [code, def] of Object.entries(DEFAULT_ROLES) as [RoleCode, (typeof DEFAULT_ROLES)[RoleCode]][]) {
   await db

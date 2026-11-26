@@ -11,6 +11,7 @@ import {
   ScrollText,
   Send,
   Server,
+  Sparkles,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const icons: Record<string, LucideIcon> = {
   channels: KeyRound,
   audit: ScrollText,
   system: Server,
+  ai: Sparkles,
 };
 
 export function Sidebar({ main, admin }: { main: NavItem[]; admin: NavItem[] }) {

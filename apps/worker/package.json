@@ -12,6 +12,7 @@
   "dependencies": {
     "@app/db": "workspace:*",
     "@app/platform": "workspace:*",
+    "@app/services": "workspace:*",
     "drizzle-orm": "0.45.4",
     "pg-boss": "12.40.0",
     "tsx": "4.23.15"

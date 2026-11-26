@@ -149,12 +149,17 @@ Uwaga: w Etapie 1 uprawnienia ról przechowywane są jako tablica kodów w `role
 | `template_sections` | template_id, type (`TITLE`, `BENEFITS`, `TECHNICAL`, `SET_CONTENTS`, `SAFETY`, `CUSTOM`), position, content (z `{{zmiennymi}}`) |
 | `channel_overrides` | product_id, marketplace_id lub channel_account_id, target (section/attribute/price), locale, value |
 
+### 5.3a Stan po Etapie 3
+Zaimplementowane: `offer_templates`, `template_sections` (jedna sekcja danego typu na wzorzec), `products.template_id` (wariant bez wzorca używa wzorca produktu głównego), `channel_overrides` (produkt × marketplace × sekcja, treść PL ze zmiennymi). Renderowanie zmiennych i limity tytułów są w `@app/domain/content`; brak danych produktu zostawia w tekście znacznik `[brak: zmienna]`, który trafia do ostrzeżeń.
+
 ### 5.4 Lokalizacja
 | Tabela | Kluczowe pola |
 |---|---|
 | `locales` | code (`pl`, `en`, `de`, `fr`, `cs`, `nl`, …), is_active |
 | `translations` | entity_type (section/override/attribute), entity_id, locale, content, **status** (`AI_DRAFT`, `PENDING_REVIEW`, `APPROVED`), **source_hash** (wykrywa nieaktualne tłumaczenie po zmianie PL), provider, reviewed_by, reviewed_at |
 | `glossary_terms` | source_term, locale, target_term, rule (`DO_NOT_TRANSLATE`, `FORCE`, `FORBIDDEN`), case_sensitive, note |
+
+> **Stan po Etapie 4 (zmiana względem projektu):** tłumaczenie to jeden wiersz na produkt × język × zakres (`scope` = `base` albo kod marketplace z nadpisaniami), a sekcje są w kolumnie JSONB (`{TYPE: {source, text}}`). Status (`AI_DRAFT` → `PENDING_REVIEW` → `APPROVED`) dotyczy całej oferty w danym języku, bo tak jest akceptowana. `source_hash` porównywany z aktualną treścią PL wykrywa tłumaczenia nieaktualne, a zatwierdzenie nieaktualnego tłumaczenia jest zablokowane. Stan zadania AI (`job_state`: QUEUED/RUNNING/FAILED/DONE) jest niezależny od statusu akceptacji. Dostawca AI to port `TranslationProvider` (`@app/services/content/providers.ts`): `ClaudeTranslationProvider` (Claude API, structured outputs, automatyczny model zapasowy przy odmowie) oraz `MockTranslationProvider` (tryb testowy). Klucz API trafia do `app_settings` w postaci zaszyfrowanej. Po tłumaczeniu działa kontrola jakości: słownik, znaczniki braków, limit tytułu, liczba punktów.
 
 ### 5.5 Kanały i publikacja
 | Tabela | Kluczowe pola |
