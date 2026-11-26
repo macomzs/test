@@ -15,8 +15,11 @@ Architektura, schemat bazy i plan etapów: [`docs/ARCHITECTURE.md`](docs/ARCHITE
 ## Uruchomienie – sposób 0: w przeglądarce, bez instalacji (GitHub Codespaces)
 1. Na stronie repozytorium kliknij zielony przycisk **Code** → zakładka **Codespaces** → **Create codespace on** (wybierz branch z najnowszym etapem).
 2. Poczekaj kilka minut na pierwsze uruchomienie: instalują się zależności, tworzy się baza i konto administratora.
-3. Panel otworzy się w nowej karcie. Jeśli tak się nie stanie, otwórz zakładkę **Ports** i kliknij ikonę globusa przy porcie 3000.
-4. Zaloguj się: `admin@firma.local` / `ZmienToHaslo123!`.
+3. W terminalu (na dole) wpisz `bash .devcontainer/start.sh` i poczekaj na napis „Ready”.
+4. Otwórz zakładkę **Porty** i kliknij ikonę globusa przy porcie 3000.
+5. Zaloguj się: `admin@firma.local` / `ZmienToHaslo123!`.
+
+Aplikacja działa, dopóki terminal z poleceniem `bash .devcontainer/start.sh` jest otwarty. Po wznowieniu uśpionego codespace'a wpisz to polecenie ponownie.
 
 Codespace zatrzymuje się sam po okresie bezczynności, a dane w bazie zostają. Konta osobiste GitHub mają miesięczny darmowy limit godzin. Po skończonych testach usuń codespace na https://github.com/codespaces.
 
