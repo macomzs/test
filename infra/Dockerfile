@@ -11,6 +11,7 @@ COPY apps/worker/package.json apps/worker/
 COPY packages/db/package.json packages/db/
 COPY packages/domain/package.json packages/domain/
 COPY packages/platform/package.json packages/platform/
+COPY packages/services/package.json packages/services/
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS source

@@ -9,6 +9,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "user.password_reset": "Ustawienie hasła przez administratora",
   "channel_account.created": "Dodanie konta marketplace",
   "channel_account.updated": "Zmiana konta marketplace",
+  "catalog.import.completed": "Import produktów",
+  "catalog.product.updated": "Zmiana produktu",
   "system.ping.requested": "Zlecenie zadania testowego",
   "system.ping.processed": "Wykonanie zadania testowego",
 };

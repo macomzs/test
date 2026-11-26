@@ -65,6 +65,7 @@ Dane (w tym wiadomości klientów) pozostają w UE. Decyzję o koncie hostingowy
 │   │                             # renderer wzorców, reguły pre-flight, SLA, glossary
 │   ├── db/                       # schemat Drizzle, migracje, seed, hasła
 │   ├── platform/                 # szyfrowanie, audyt, outbox, kolejka
+│   ├── services/                 # przypadki użycia wspólne dla web i worker (np. import feedu)
 │   ├── connectors/               # (Etap 5) sdk + mock, allegro, kaufland, mirakl, ...
 │   └── ai/                       # (Etap 4) porty LLM/tłumaczeń + adaptery
 ├── infra/                        # Dockerfile, docker-compose.yml
@@ -127,6 +128,9 @@ Uwaga: w Etapie 1 uprawnienia ról przechowywane są jako tablica kodów w `role
 | `audit_logs` | id, actor_id, action, entity_type, entity_id, diff (jsonb), created_at |
 
 ### 5.2 Katalog (PIM)
+
+> **Stan po Etapie 2a:** zaimplementowane są `products` (z polem `kind`: SIMPLE/PARENT/VARIANT i `parent_id`), `product_images`, `import_sources`, `import_runs`. Warianty dziedziczą puste pola (marka, ceny, wymiary, waga, materiały) z produktu głównego – logika w `@app/domain` (`resolveInherited`). Import z feedu XML dopasowuje produkty po EAN (feed producenta nie zawiera SKU – SKU uzupełniane ręcznie) i łączy warianty po nazwie („Nazwa (wariant)”). Ręcznie zmieniona nazwa nie jest nadpisywana przez kolejne importy. Pozostałe tabele z tej sekcji – w Etapie 2b.
+
 | Tabela | Kluczowe pola |
 |---|---|
 | `brands` / `manufacturers` | dane producenta i osoby odpowiedzialnej w UE (GPSR) |

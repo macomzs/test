@@ -12,7 +12,7 @@ const config: NextConfig = {
   // Obraz Dockera używa trybu "standalone" (minimalny serwer); lokalnie wystarcza "next start".
   output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   outputFileTracingRoot: path.join(import.meta.dirname, "../.."),
-  transpilePackages: ["@app/db", "@app/domain", "@app/platform"],
+  transpilePackages: ["@app/db", "@app/domain", "@app/platform", "@app/services"],
   serverExternalPackages: ["@node-rs/argon2", "pg", "pg-boss"],
   poweredByHeader: false,
   // GitHub Codespaces udostępnia aplikację pod adresem *.app.github.dev – zezwalamy na niego

@@ -28,7 +28,7 @@ export default async function DashboardPage() {
       </div>
 
       <Card className="mt-6">
-        <CardHeader title="Moduły systemu" description="Moduły powstają etapami – nieaktywne są oznaczone numerem etapu." />
+        <CardHeader title="Moduły systemu" description="Moduły powstają etapami – te w przygotowaniu są oznaczone numerem etapu." />
         <ul className="divide-y divide-slate-100">
           {APP_MODULES.filter((m) => hasPermission(user.permissions, m.permission)).map((m) => (
             <li key={m.key} className="flex items-center justify-between gap-4 px-5 py-3">
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
                 <Link href={m.href} className="font-medium hover:underline">{m.label}</Link>
                 <p className="text-sm text-slate-500">{m.description}</p>
               </div>
-              <Badge tone="neutral">Etap {m.stage}</Badge>
+              {m.ready ? <Badge tone="success">Dostępny</Badge> : <Badge tone="neutral">Etap {m.stage}</Badge>}
             </li>
           ))}
         </ul>

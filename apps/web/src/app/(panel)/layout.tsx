@@ -21,7 +21,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       href: m.href,
       label: m.label,
       icon: m.key,
-      stage: m.stage,
+      stage: m.ready ? undefined : m.stage,
     })),
   ];
   const admin = ADMIN_NAV.filter((i) => hasPermission(user.permissions, i.permission)).map(({ permission: _p, ...i }) => i);
